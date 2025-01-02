@@ -376,7 +376,7 @@ if __name__ == "__main__":
     rate1 = 0.05
     max_iters = 500
     lamda1 = 0.00001
-    fold = 20
+    fold = 2
     iris_filename = 'iris_data.csv'
     print("--The code runs for synthetic dataset first and then for iris dataset next--")
     print("-----------For m={0} ------".format(m1))

@@ -1,0 +1,8 @@
+*.venv
+*dataset/*
+training_data/*
+testing_data/*
+*.csv
+*.npz
+*.pdf
+*.pkl
