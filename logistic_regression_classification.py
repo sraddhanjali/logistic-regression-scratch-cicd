@@ -266,6 +266,8 @@ def main_run_for_any_data(data, train_index, test_index, n_class, complexities, 
     # start of testing
     t00 = time.time()
     y_logistic_train = (fin_w.T * phi_fin_train.T).T
+    print(fin_w.shape, phi_fin_train.shape, y_logistic_train.shape)
+    print("_______________________________-------")
     t11 = time.time()
     testing_time = t11 - t00
     # end of testing
