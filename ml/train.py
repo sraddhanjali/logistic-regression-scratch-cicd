@@ -33,4 +33,7 @@ with open(os.path.join(script_dir, 'training_data/iris_train_labels.pkl'), 'rb')
     train_labels = pickle.load(f)
 
 
+
+# run_test_old_way()
+
 run_test_old_way([train_images, train_labels])

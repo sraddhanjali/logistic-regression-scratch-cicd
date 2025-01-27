@@ -50,24 +50,28 @@ def create_powers_desc(descriptors, complexities):
             yield r.T
 
 
-def create_combination_desc(descriptors, complexities, d_shape):
+def create_combination_desc(descriptors, complexities):
     """ Build combinations of descriptors.
     :param descriptors: a list of descriptors.
     :param complexities: a list of polynomial complexities.
     :param d_shape: number of instances in data.
     :return: iterable for combination of descriptors.
     """
+    d_shape = descriptors[0].shape[0]
     for degree in complexities:
         indices = [i for i in range(len(descriptors))]
+        # print(indices)
         iterab = combinations(indices, degree)
         for it in iterab:
+            # print(it, len(it), type(it))
             mult = np.ones(d_shape)
             for i in it:
-                mult *= descriptors[i]
+                # print(mult.shape, d_shape, descriptors[i].shape)
+                mult *= descriptors[i][:, 0]
             yield mult.T
 
 
-def create_phi_matrix(descriptors, d_shape, complexities):
+def create_phi_matrix(descriptors, complexities):
     """ Build a phi data from descriptors.
     :param descriptors: a list of descriptors.
     :param d_shape: number of instances in data.
@@ -77,9 +81,9 @@ def create_phi_matrix(descriptors, d_shape, complexities):
     # print("create_phi_matrix is called", type(descriptors), len(descriptors), d_shape)
     # print("complexities", complexities)
     phi = []
-    one = np.ones(d_shape)
+    one = np.ones(descriptors[0].shape[0])
     phi.append(one)
-    for val in create_combination_desc(descriptors, complexities, d_shape):
+    for val in create_combination_desc(descriptors, complexities):
         phi.append(val)
     for val in create_powers_desc(descriptors, complexities):
         phi.append(val)
@@ -190,18 +194,17 @@ def accuracy(y_pred, y_original):
     return acc
 
 def preprocess_data(descriptors, mean_vars):
-    descrips = []
+### TODO come and fix this function
     if not mean_vars:
-        for i, d in enumerate(descriptors):
-            d_norm, mean, var = standardize_data(d)
-            mean_vars[i] = [mean, var]
-            descrips.append(d_norm)
+        mean = np.mean(descriptors, axis=1)
+        var = np.std(descriptors, axis=1)
+        descriptors = (descriptors - mean) / var
+        mean_vars = [mean, var]
     else:
-        for i, d in enumerate(descriptors):
-            d_norm = (d - mean_vars[i][0])/mean_vars[i][1]
-            descrips.append(d_norm)
-    d_shape = descrips[0].shape[0]
-    return descrips, d_shape, mean_vars
+        mean, var = mean_vars
+        print(mean)
+        descriptors = (descriptors - mean) / var
+    return descriptors, mean_vars
 
 
 def plot_cost_function_convergence(cost_history, cost_iteration):
@@ -235,10 +238,10 @@ class PreprocessDataTransformer:
         return self
 
     def transform(self, X: np.ndarray) -> Tuple[List[np.ndarray], int]:
-        descriptors, d_shape, mean_vars = preprocess_data(X, self.mean_vars)
+        descriptors, mean_vars = preprocess_data(X, self.mean_vars)
         self.mean_vars = mean_vars
         # print("Preprocess transform is called", X.shape, type(descriptors), len(descriptors), d_shape)
-        return descriptors, d_shape
+        return descriptors
 
 
 class PhiMatrixTransformer:
@@ -268,11 +271,11 @@ class GradientDescentOptimizer:
 
     def fit(self, X: np.matrix, y: np.ndarray) -> 'GradientDescentOptimizer':
         # print("Gradient Descent fit got called", y.shape)
-        noof_classes = int(non_tuning_params.get('n_class', 3))
-        target_vec = compute_target_vector(y, n_class=noof_classes)
+        _n_class = int(non_tuning_params.get('n_class', 3))
+        target_vec = compute_target_vector(y, n_class=_n_class)
         self.curr_weight = np.random.random_sample((X.shape[1], n_class))
         self.curr_weight, self.cost_history, self.cost_iterations, self.grad_matrix_history = grad_descent(
-            X, self.curr_weight, self.l_rate, self.max_iteration, target_vec, self.reg_param_lambda, n_class=noof_classes)
+            X, self.curr_weight, self.l_rate, self.max_iteration, target_vec, self.reg_param_lambda, n_class=_n_class)
         # print("this fit is being called and weights are ", len(self.curr_weight))
         return self
     
@@ -373,7 +376,7 @@ def run_model(X, y):
     # best_model.save_checkpoint('best_model_kfold_checkpoint.npz')
 
 
-def run_test_old_way(data):
+def run_test_old_way(data=None):
     _l_rate = tuning_params.get('l_rate', 0.05)
     _max_iteration = tuning_params.get('max_iteration', 500)
     _reg_param_lambda = tuning_params.get('reg_param_lambda', 0.00001)
@@ -393,7 +396,7 @@ def run_test_old_way(data):
     
     X, y = data[0], data[1]
 
-    print(X.shape, y,)
+    print(X.shape, y.shape)
 
     kf = KFold(n_splits=_n_folds, shuffle=True, random_state=_n_random_state)
     
@@ -402,19 +405,19 @@ def run_test_old_way(data):
     X_test = []
 
     for train_index, test_index in kf.split(X[:, 0]):
+        print("len of fold of train test indices", len(train_index), len(test_index))
         _fold += 1
         print("--------Running K fold for fold={0}.......".format(_fold))
-        for i in range(X.shape[1]):
-            X_train.append(X[:, i][train_index])
-            X_test.append(X[:, i][test_index])
-
+        X_train.append(X[train_index])
+        X_test.append(X[test_index])
         y_train, y_test = y[train_index], y[test_index]
         assert y_train.all() != None, "Target train vector should have more than one element"
         assert y_test.all() != None, "Target test vector should have more than one element"
-        desc, data_shape, mean_var_list = preprocess_data(X_train, {})
-        desc_test, data_test_shape, mean_var_list = preprocess_data(X_test, mean_var_list)
-        phi_fin_train = create_phi_matrix(desc, data_shape, _complexitites)
-        phi_fin_test = create_phi_matrix(desc_test, data_test_shape, _complexitites)
+        desc, mean_var_list = preprocess_data(X_train, {})
+   
+        desc_test, mean_var_list = preprocess_data(X_test, mean_var_list)
+        phi_fin_train = create_phi_matrix(desc, _complexitites)
+        phi_fin_test = create_phi_matrix(desc_test, _complexitites)
 
         tar_vector = compute_target_vector(y_train, _n_class)
         assert tar_vector.all() != None, "Target vector should have more than one element"
@@ -484,13 +487,14 @@ def run_kfold(X, y):
             X_train.append(data[0][:, i][train_index])
             X_test.append(data[0][:, i][test_index])
 
+        mean_var_list = []
         y_train, y_test = data[1][train_index], data[1][test_index]
         assert y_train.all() != None, "Target train vector should have more than one element"
         assert y_test.all() != None, "Target test vector should have more than one element"
-        desc, data_shape, mean_var_list = preprocess_data(X_train, {})
-        desc_test, data_test_shape, mean_var_list = preprocess_data(X_test, mean_var_list)
-        phi_fin_train = create_phi_matrix(desc, data_shape, non_tuning_params["complexities"])
-        phi_fin_test = create_phi_matrix(desc_test, data_test_shape, non_tuning_params["complexities"])
+        desc, mean_var_list = preprocess_data(X_train, {})
+        desc_test, mean_var_list = preprocess_data(X_test, mean_var_list)
+        phi_fin_train = create_phi_matrix(desc, non_tuning_params["complexities"])
+        phi_fin_test = create_phi_matrix(desc_test, non_tuning_params["complexities"])
 
         tar_vector = compute_target_vector(y_train, _n_class)
         assert tar_vector.all() != None, "Target vector should have more than one element"
