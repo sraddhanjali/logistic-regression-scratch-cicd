@@ -7,3 +7,4 @@ testing_data/*
 *.pdf
 *.pkl
 *__pycache__/*
+*/__pycache__/*
