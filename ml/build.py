@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.colors as mc
 import matplotlib.pyplot as plt
+from typing import Union, Sequence
 from itertools import combinations
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_blobs
@@ -17,8 +18,9 @@ from config import non_tuning_params
 
 
 # run on synthetic data
-def make_synthetic_data(n_samples, n_classes, random_state, n_features=2):
-    """ Make synthetic data to work for validation of implementation.
+def make_synthetic_data(n_samples: Union[int, Sequence[int]]=100, n_classes: int= 100, random_state: int=100, n_features:int=2):
+    """ Make isotropic Gaussian Blobs for synthetic data to work.
+    Used for validation of implementation.
     :param n_samples: number of samples in data.
     :param n_classes: number of classes.
     :param n_features: number of features built from descriptors.
@@ -28,7 +30,7 @@ def make_synthetic_data(n_samples, n_classes, random_state, n_features=2):
 
 
 # TODO Add this configuration regarding the number of samples and number of class
-# TODO via a configuration file 
+# TODO via a configuration file like config.yaml
 
 random_state = non_tuning_params["n_random_state"]
 n = non_tuning_params["n_samples"]
