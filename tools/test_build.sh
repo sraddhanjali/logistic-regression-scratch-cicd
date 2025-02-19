@@ -5,7 +5,7 @@
 # Exit when any command fails
 set -e
 
-# lint only config.yaml file
+# TODO lint only config.yaml file
 # python3 config.yaml
 
 python3 ../ml/build.py
