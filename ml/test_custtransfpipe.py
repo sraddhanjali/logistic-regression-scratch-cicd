@@ -48,11 +48,22 @@ class VerbosePipeline(Pipeline):
         return self._fit_transform(X)
 
 if __name__ == "__main__":
+
+    import mlflow 
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")
+    from mlflow import log_metric, log_param, log_artifact
+
+    import numpy as np
+
     input_d = [1, 2, 4, 5, 6]
     pipeline =  Pipeline([
     ('atransform', ATransform()), 
     ('btransform', BTransform())
     ])
+    
+    log_param("multiplier", 3)
+    log_metric("mean_multiplier", np.mean(input_d))
+    
 
     print(f" Input before {input_d}")
     print(f" Non-verbose pipeline {pipeline.fit_transform(input_d)} output")
