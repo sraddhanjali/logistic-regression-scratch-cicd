@@ -1,0 +1,52 @@
+from typing import Tuple, List, Optional
+
+import numpy as np
+
+from sklearn.base import BaseEstimator, TransformerMixin, ClassifierMixin, OneToOneFeatureMixin
+from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+
+from sklearn.preprocessing import StandardScaler
+
+
+class ScalerTransform(OneToOneFeatureMixin, BaseEstimator, TransformerMixin):
+    """A custom scaler transform for custom logistic regression classifier implementation.
+
+        This transform defines the following functionality: 
+
+        a fit_transform method that delegates to fit and transform;
+
+        if mean_ and std_ are defined, then ScalerTransform will use it to scale X.
+        
+        Examples
+        >>> transformer = ScalerTransform()
+        >>> X = [[1, 2], [2, 3], [3, 4]]
+        >>> transformer.fit_transform(X)
+        array([1, 1, 1])
+    """
+    
+    def __init__(self):
+        self.mean_ = None
+        self.std_ = None
+
+    # Pipeline expects data through fit and transform
+    def fit_transform(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
+        return self.fit(X).transform(X)
+
+    def _reset(self):
+        if hasattr(self, "mean_"):
+            del self.mean_
+            del self.std_
+
+    def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> 'ScalerTransform':
+        X = check_array(X)
+        if self.mean_ is None: 
+            self.mean_ = np.mean(X, axis=0)
+            self.std_ = np.std(X, axis=0)
+        self.is_fitted_ = True        
+        return self
+
+    def transform(self, X: np.ndarray) -> np.ndarray:
+        check_is_fitted(self)
+        X = check_array(X)
+        return (X - self.mean_) / self.std_
