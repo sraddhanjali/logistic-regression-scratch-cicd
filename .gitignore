@@ -6,5 +6,5 @@ testing_data/*
 *.npz
 *.pdf
 *.pkl
-*__pycache__/*
-*/__pycache__/*
+**__pycache__*
+*.pyc
