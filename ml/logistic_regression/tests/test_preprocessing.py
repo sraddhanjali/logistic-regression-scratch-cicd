@@ -1,10 +1,10 @@
-import os
-import sys
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 
 from ml.logistic_regression import preprocessing as pp
 
+import sys
+sys.path.append('.')  # Add folder to Python path
 
 
 X = [[1, 2], [2, 3], [3, 4]]
