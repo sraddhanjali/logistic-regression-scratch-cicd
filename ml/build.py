@@ -14,8 +14,14 @@ from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder
 
-from config import non_tuning_params
+# for decorator
+import functools
 
+
+import sys
+sys.path.append(".")
+
+from config import tuning_params, non_tuning_params
 
 # run on synthetic data
 def make_synthetic_data(n_samples: Union[int, Sequence[int]]=100, n_classes: int= 100, random_state: int=100, n_features:int=2):
@@ -37,23 +43,34 @@ n = non_tuning_params["n_samples"]
 k_class = non_tuning_params["n_class"]
 # the percentage of dataset used for final testing
 test_size = non_tuning_params["test_size"]
-script_dir = sys.path[0]
+
 X, y = make_synthetic_data(n, k_class, random_state)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
-with open(os.path.join(script_dir, "training_data/train_data.pkl"), 'wb') as f:
-    pickle.dump(X_train, f)
+from typing import List, Union
 
-with open(os.path.join(script_dir, "training_data/train_labels.pkl"), 'wb') as f:
-    pickle.dump(y_train, f)
+def write_to_file(dataset: List):
+    for data_ in dataset:
+        script_dir, fldname_, fname_, data = data_
+        fullpathname = os.path.join(script_dir, fldname_, fname_)
+        print(fullpathname)
+        if os.path.exists(fullpathname):
+            os.remove(fullpathname)
+        print(f"Save the pickled training and testing data into the training testing folders")
+        print(f"for path: {fullpathname}")
+        with open(fullpathname, 'wb') as f:
+            pickle.dump(data_, f)
 
-with open(os.path.join(script_dir, "testing_data/test_data.pkl"), 'wb') as f:
-    pickle.dump(X_test, f)
+script_dir = sys.path[0]
 
-with open(os.path.join(script_dir, "testing_data/test_labels.pkl"), 'wb') as f:
-    pickle.dump(y_test, f)
+dataset_info = [[script_dir, "training_data", "train_data.pkl", X_train], 
+          [script_dir, "training_data", "train_labels.pkl", y_train],
+          [script_dir, "testing_data", "test_data.pkl", X_test],
+          [script_dir, "testing_data", "test_labels.pkl", y_test]]
 
+
+write_to_file(dataset_info)
 
 # run on local data
 def read_main_data(file_name):
@@ -71,14 +88,10 @@ local_filepath = os.path.join(script_dir, "../dataset/iris_data.csv")
 X, y, lb = read_main_data(local_filepath)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
-with open(os.path.join(script_dir, "training_data/iris_train_data.pkl"), 'wb') as f:
-    pickle.dump(X_train, f)
+        
+iris_dataset_info = [[script_dir, "training_data", "iris_train_data.pkl", X_train], 
+          [script_dir, "training_data", "iris_train_labels.pkl", y_train],
+          [script_dir, "testing_data", "iris_test_data.pkl", X_test],
+          [script_dir, "testing_data", "iris_test_labels.pkl", y_test]]
 
-with open(os.path.join(script_dir, "training_data/iris_train_labels.pkl"), 'wb') as f:
-    pickle.dump(y_train, f)
-
-with open(os.path.join(script_dir, "testing_data/iris_test_data.pkl"), 'wb') as f:
-    pickle.dump(X_test, f)
-
-with open(os.path.join(script_dir, "testing_data/iris_test_labels.pkl"), 'wb') as f:
-    pickle.dump(y_test, f) 
+write_to_file(iris_dataset_info)

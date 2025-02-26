@@ -1,16 +1,6 @@
-# logistic-regression-scratch
-Implementation of Logistic Regression Classifier 
+# Designing a pipeline with custom transforms following the scikit-learn's design philosopy
 
+# Classifier Logisitic Regression written with the goal to have same interface as regular logisitic regression does
 
-# ml/build.py
-Sets up the training dataset and testing dataset 
-
-# ml/train.py
-Creates the best performing model
-
-# ml/test.py
-Uses the testing dataset & displays the testing accuracy
-
-# ml/package.py
-Package the trained model for deployment
+# Implement the core of Logisitic Regression by oneself but keeping the scikit-learn interfaces similar
 

@@ -10,7 +10,19 @@ set -e
 # TODO lint only config.yaml file
 # python3 config.yaml
 
-python3 logistic_regression_classification.py
+python3 ml/test_mlflow.py
+
+set -e
+
+python3 ml/logistic_regression/tests/test_preprocessing.py
+
+set -e 
+
+python3 ml/logisitc_regression/tests/test_features.py
+
+set -e 
+
+python3 ml/logisitic_regression/tests/test_pipeline.py
 
 set -e
 

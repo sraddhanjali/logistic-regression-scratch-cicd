@@ -12,7 +12,6 @@ from sklearn.datasets import make_blobs
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder
-from core import run_test_old_way
 
 
 script_dir = sys.path[0]
