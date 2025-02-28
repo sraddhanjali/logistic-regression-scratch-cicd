@@ -1,0 +1,26 @@
+setting:
+  seed: 100
+  n_samples: 1000
+  n_class: 3
+  fold: 2
+  m1: 1
+  rate1: 0.05
+  max_iters: 500
+  lamda1: 0.00001
+  polys: "[i for i in range(1, m1 + 1)]"
+  test_size: 0.3
+
+data:
+  train_data: "data/processed/train.pkl"
+  test_data: "data/processed/test.pkl"
+  raw_data: "data/raw/iris_data.csv"
+  new_data: "data/new_data.csv" # for new data checks
+
+model:
+  saved_model: "models/saved_model.pkl"
+  offline_model: "models/offline_model.pkl"
+
+mlflow: 
+  tracking_uri: "http://localhost:5000"
+
+    
