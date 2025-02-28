@@ -10,33 +10,33 @@
 
 ml_project/
 
-│── data/                   - Data folder (bind-mounted in Docker)
+        │── data/                   - *Data folder (bind-mounted in Docker)*
 
-│── models/                 - Trained models saved here
+        │── models/                 - *Trained models saved here*
 
-│── tests/                  - Unit tests
+        │── tests/                  - *Unit tests*
 
-│   ├── test_utils.py       
+            ├── test_utils.py       
 
-│   ├── test_ml_model.py  
+            ├── test_ml_model.py  
 
-│── utils/                  
+        │── utils/                  
 
-│   ├── utils.py            - General utility functions
+           ├── utils.py            - *General utility functions*
 
-│   ├── preprocessing.py    - Preprocessing functions
+           ├── preprocessing.py    - *Preprocessing functions*
 
-│── ml_model.py             - Main model training script
+        │── ml_model.py             - *Main model training script*
 
-│── train.py                - Training pipeline script
+        │── train.py                - *Training pipeline script*
 
-│── mlflow_tracking.py      - MLflow integration
+        │── mlflow_tracking.py      - *MLflow integration*
 
-│── Dockerfile              - Docker setup
+        │── Dockerfile              - *Docker setup*
 
-│── requirements.txt        - Dependencies
+        │── requirements.txt        - *Dependencies*
 
-│── run_offline.py          - Offline testing scenario
+        │── run_offline.py          - *Offline testing scenario*
 
-│── README.md               - Documentation
+        │── README.md               - *Documentation*
 
