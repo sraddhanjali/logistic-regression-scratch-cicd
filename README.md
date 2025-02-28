@@ -1,4 +1,6 @@
-# Design a streamlined ML model (Logisitic Regression)
+# Design a dockerized custom ML model 
+### Logisitic Regression created from scratch is used as an example
+
 ## Features include:
 1. Dockerization compatibility
 2. Proper testing
@@ -8,35 +10,56 @@
 ### Project Structure
 
 
-ml_project/
+    ml_project/
 
-        │── data/                   - *Data folder (bind-mounted in Docker)*
+        │── data/                   Data folder (bind-mounted in Docker)
+            
+            │── processed/
+            
+                │── testing_data/
+                
+                │── training_data/
 
-        │── models/                 - *Trained models saved here*
+        │── models/                 Trained models saved here
+        
+            │── offline_model.pkl
+            
+            │── saved_model.pkl
 
-        │── tests/                  - *Unit tests*
+        │── tests/                  Unit tests
 
-            ├── test_utils.py       
+           │──  test_utils.py       
 
-            ├── test_ml_model.py  
+           │──  test_ml_model.py 
+
+        │── tools/
+        
+            │── install.sh
+            
+            │── test_build.sh
 
         │── utils/                  
 
-           ├── utils.py            - *General utility functions*
+           ├── utils.py            General utility functions
 
-           ├── preprocessing.py    - *Preprocessing functions*
+           ├── preprocessing.py    Preprocessing functions
+        
+        │── docker-compose.yml
 
-        │── ml_model.py             - *Main model training script*
+        │── config.yml
 
-        │── train.py                - *Training pipeline script*
+        │── ml_model.py             Main model training script
 
-        │── mlflow_tracking.py      - *MLflow integration*
+        │── train.py                Training pipeline script
 
-        │── Dockerfile              - *Docker setup*
+        │── mlflow_tracking.py      MLflow integration
 
-        │── requirements.txt        - *Dependencies*
+        │── Dockerfile              Docker setup
 
-        │── run_offline.py          - *Offline testing scenario*
+        │── requirements.txt        Dependencies
 
-        │── README.md               - *Documentation*
+        │── run_offline.py          Offline testing scenario
+
+        │── README.md               Documentation
+
 
