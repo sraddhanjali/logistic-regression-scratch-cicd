@@ -14,15 +14,15 @@ python3 ml/test_mlflow.py
 
 set -e
 
-python3 ml/logistic_regression/tests/test_preprocessing.py
+python3 ml/tests/test_preprocessing.py
 
 set -e 
 
-python3 ml/logisitc_regression/tests/test_features.py
+python3 ml/tests/test_features.py
 
 set -e 
 
-python3 ml/logisitic_regression/tests/test_pipeline.py
+python3 ml/tests/test_pipeline.py
 
 set -e
 
