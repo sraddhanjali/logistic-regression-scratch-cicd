@@ -2,7 +2,7 @@ import sys
 sys.path.append('.')  # Add folder to Python path
 from sklearn.datasets import make_blobs
 from sklearn.pipeline import Pipeline
-from . import ml_model as ml
+import ml_model as ml
 import matplotlib.pyplot as plt
 
 

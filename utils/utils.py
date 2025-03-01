@@ -17,7 +17,7 @@ def compute_target_vector(y_original: np.ndarray, n_class: int) -> np.ndarray:
         y_encoded = LabelBinarizer().fit_transform(y_original)
     return y_encoded
 
-def mapping_three_prob_to_class(y_logistic: np.ndarray) -> np.ndarray:
+def mapping_prob_to_class(y_logistic: np.ndarray) -> np.ndarray:
     """
     :param y_logistic: encoded labels.
     :return: list of class labels obtained from encoded labels.
