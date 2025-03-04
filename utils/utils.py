@@ -2,20 +2,14 @@ import numpy as np
 from itertools import combinations
 from sklearn.preprocessing import LabelBinarizer
 
-def custom_softmax(unsoftmaxed_data: np.ndarray, axis: int =0) -> np.ndarray:
-    def softmax_func(x: np.ndarray) -> np.ndarray:
-        e_x = np.exp(x - np.max(x))
-        return e_x / np.sum(e_x)
-    return np.apply_along_axis(softmax_func, axis, unsoftmaxed_data)
 
-def compute_target_vector(y_original: np.ndarray, n_class: int) -> np.ndarray:
-    if n_class == 2:
-        y_encoded = np.zeros(len(y_original), 2)
-        for i, label in enumerate(y_original):
-            y_encoded[i, int(label)] = 1
-    else:
-        y_encoded = LabelBinarizer().fit_transform(y_original)
-    return y_encoded
+def custom_softmax(z: np.ndarray) -> np.ndarray:
+    exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))  # Stabilize softmax
+    return exp_z / np.sum(exp_z, axis=1, keepdims=True)
+
+def compute_target_vector(y: np.ndarray, n_class: int) -> np.ndarray:
+    labelencoder_y = LabelBinarizer()
+    return labelencoder_y.fit_transform(y)
 
 def mapping_prob_to_class(y_logistic: np.ndarray) -> np.ndarray:
     """

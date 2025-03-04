@@ -10,7 +10,6 @@ class PhiMatrixTransformer(OneToOneFeatureMixin, BaseEstimator, TransformerMixin
 
     def __init__(self, polynomial_degree: int = 1):
         self.polynomial_degree = polynomial_degree
-
     
     def create_powers_desc(self, X: np.ndarray) -> np.ndarray:
         """ Generate powers of features (polynomial features)."""
@@ -25,12 +24,12 @@ class PhiMatrixTransformer(OneToOneFeatureMixin, BaseEstimator, TransformerMixin
             for combination in combinations_with_replacement(range(n_features), degree):
                 new_feature = np.prod([X[:, i] for i in combination], axis=0, keepdims=True)
                 init_features.append(new_feature)
-        return np.hstack(init_features)
+        return np.vstack(init_features).reshape(X.shape)
     
     def fit(self, X: np.ndarray) -> 'PhiMatrixTransformer':
         check_array(X)
         self.is_fitted_ = True
-        return self
+        return self.transform(X)
 
     def transform(self, X: np.ndarray) -> np.ndarray:
         check_is_fitted(self)
@@ -40,7 +39,7 @@ class PhiMatrixTransformer(OneToOneFeatureMixin, BaseEstimator, TransformerMixin
         interaction_features = self.create_combination_desc(X)
 
         # bias columns of ones
-        bias_term = np.ones((X.shape[0], 1)) # number of instances, 1
+        bias_term = np.ones(X.shape) # number of instances, 1
 
         print(bias_term.shape, poly_features.shape, interaction_features.shape)
         
