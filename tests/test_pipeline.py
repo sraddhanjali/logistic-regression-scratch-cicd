@@ -65,5 +65,6 @@ for train_ind, test_ind in kf.split(synth_data[0][:, 0]):
         ('feature', ft.PhiMatrixTransformer(polynomial_degree=m1))
     ])
     pipe_res = pipe.fit(X_train, y_train)
+    # pipeline working
     # np.testing.assert_array_almost_equal(phi_fin_train, pipe_res, err_msg="The phi matrix from Pipeline is not working as expected. Check PhiMatrixTransformer")
     break
