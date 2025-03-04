@@ -26,12 +26,12 @@ class PhiMatrixTransformer(OneToOneFeatureMixin, BaseEstimator, TransformerMixin
                 init_features.append(new_feature)
         return np.vstack(init_features).reshape(X.shape)
     
-    def fit(self, X: np.ndarray) -> 'PhiMatrixTransformer':
+    def fit(self, X: np.ndarray, y: Optional[np.ndarray]) -> 'PhiMatrixTransformer':
         check_array(X)
         self.is_fitted_ = True
-        return self.transform(X)
+        return self.transform(X, y)
 
-    def transform(self, X: np.ndarray) -> np.ndarray:
+    def transform(self, X: np.ndarray, y: Optional[np.ndarray]) -> np.ndarray:
         check_is_fitted(self)
         X = check_array(X)
 

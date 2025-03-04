@@ -38,16 +38,15 @@ def printer(x):
         print(f"X={x},type={type(x)}, shape={x.shape}")
 
 for train_ind, test_ind in kf.split(synth_data[0][:, 0]):
-    X_train = []
-    for i in range(synth_data[0].shape[1]):
-        X_train.append(synth_data[0][:, i][train_ind])
+    X_train = synth_data[0][train_ind]
+    y_train = synth_data[1][train_ind]
     lib_scaler = StandardScaler()
     lib_res = lib_scaler.fit_transform(X_train)
     printer(lib_res)
     
     #### test for new implementation
     scaler = pp.ScalerTransform()
-    res = scaler.fit_transform(X_train)  
+    res = scaler.fit_transform(X_train, y_train)  
     printer(res)
     np.testing.assert_array_almost_equal(lib_res, res, err_msg="The Preprocess logic failed. Check ScalerTransform")
 
@@ -56,12 +55,15 @@ for train_ind, test_ind in kf.split(synth_data[0][:, 0]):
     # printer(phi_fin_train)
 
     phi = ft.PhiMatrixTransformer(polynomial_degree=m1)
-    phimatrix = phi.fit_transform(res)
+    phimatrix = phi.fit(res, y_train)
     printer(phimatrix)
     # np.testing.assert_array_almost_equal(phi_fin_train, phimatrix, err_msg="The phi matrix transformer is not working as expected. Check PhiMatrixTransformer")
 
 
-    pipe = Pipeline(pp.ScalerTransform(), ft.PhiMatrixTransformer(polynomial_degree=m1))
-    pipe_res = pipe.fit_transform(X_train)
+    pipe = Pipeline([
+        ('scaler', pp.ScalerTransform()), 
+        ('feature', ft.PhiMatrixTransformer(polynomial_degree=m1))
+    ])
+    pipe_res = pipe.fit(X_train, y_train)
     # np.testing.assert_array_almost_equal(phi_fin_train, pipe_res, err_msg="The phi matrix from Pipeline is not working as expected. Check PhiMatrixTransformer")
     break
