@@ -1,70 +1,79 @@
-from sklearn.datasets import make_blobs
-from sklearn.pipeline import Pipeline
-
 import sys
 sys.path.append('.')  # Add folder to Python path
+from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+import numpy as np
+import ml_model as ml
+import matplotlib.pyplot as plt
+from sklearn.pipeline import Pipeline
+
 
 from tests.logistic_regression_classification import run_kfold, create_phi_matrix, preprocess_data
 from sklearn.model_selection import KFold
 import numpy as np
 from utils import features as ft
 from utils import preprocessing as pp
+from sklearn import datasets
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.metrics import accuracy_score
 
-rng = np.random.RandomState(seed=0)  # new random number generator API is recommended
+import sys
+sys.path.append('.')  # Add folder to Python path
 
-n_samples = 1000
-n_classes = 3
-n_features = 2
+digits = load_digits()
+X, y = digits.data, digits.target  # X: (1797, 64), y: (1797,)
+
+# Normalize features for better convergence
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+
+
+# Train-test split
+X_train, X_test, y_train_, y_test_ = train_test_split(X, y, test_size=0.2, random_state=42)
+
+labelencoder_y = LabelBinarizer()
+y_train = labelencoder_y.fit_transform(y_train_)
+y_test = labelencoder_y.fit_transform(y_test_)
+# Initialize weight matrix
+n_features = X_train.shape[1]  # 64 pixels
+print(f"no. of preliminary features {n_features}")
+n_classes = y_train.shape[1]   # 10 digits (0-9)
+print(f"n_class {n_classes}")
+print(f"y_train {y_train.shape}")
+print(f"X_train {X_train.shape}")
+np.random.seed(42)
+weights = np.random.rand(n_features, n_classes)  # Shape: (64, 10)
+print(f"start weights shape {weights.shape}")
+# Hyperparameters
+learning_rate = 0.1
+max_iterations = 1000
+reg_lambda = 0.01
 m1 = 1
-rate1 = 0.05
-max_iters = 500
-lamda1 = 0.00001
-fold = 2
-print("--The code runs for synthetic dataset first and then for iris dataset next--")
-print("-----------For m={0} ------".format(m1))
-polys = [i for i in range(1, m1 + 1)]
-print("-----------FOR SYNTHETIC DATASET---------")
-synth_data  = make_blobs(n_samples=n_samples, n_features=n_features, centers=n_classes, cluster_std=1.6, random_state=rng)
-kf = KFold(n_splits=fold, shuffle=True, random_state=rng)
-kf.get_n_splits(synth_data[0])
-from sklearn.preprocessing import StandardScaler
-
-def printer(x):
-    try:
-        print(f"X={x},type={type(x)}, shape={x.shape}")
-    except Exception as e:
-        print(f"Exception as e: {e}")
-    finally:
-        print(f"X={x},type={type(x)}, shape={x.shape}")
-
-for train_ind, test_ind in kf.split(synth_data[0][:, 0]):
-    X_train = synth_data[0][train_ind]
-    y_train = synth_data[1][train_ind]
-    lib_scaler = StandardScaler()
-    lib_res = lib_scaler.fit_transform(X_train)
-    printer(lib_res)
-    
-    #### test for new implementation
-    scaler = pp.ScalerTransform()
-    res = scaler.fit_transform(X_train, y_train)  
-    printer(res)
-    np.testing.assert_array_almost_equal(lib_res, res, err_msg="The Preprocess logic failed. Check ScalerTransform")
 
 
-    # phi_fin_train = create_phi_matrix(lib_res, lib_res.shape, polys)
-    # printer(phi_fin_train)
+pipe = Pipeline([
+    ('scaler', pp.ScalerTransform()), 
+    ('feature', ft.PhiMatrixTransformer(polynomial_degree=m1))
+])
+pipe_res = pipe.fit(X_train, y_train)
+# pipeline working
+# np.testing.assert_array_almost_equal(phi_fin_train, pipe_res, err_msg="The phi matrix from Pipeline is not working as expected. Check PhiMatrixTransformer")
+lr = Pipeline([
+    ('scaler', pp.ScalerTransform()), 
+    ('feature', ft.PhiMatrixTransformer(polynomial_degree=m1)),
+    ('classifier', ml.LogisticRegressionFromScratch(n_class=n_classes))
+])
+# fit the pipeline
+lr.fit_transform(X_train, y_train)
+# make predictions
+# print(y_train)
+y_pred = lr.predict(X_train)
+print(f"Train accuracy score: {np.round(accuracy_score(y_train_, y_pred) * 100, 3)}")
 
-    phi = ft.PhiMatrixTransformer(polynomial_degree=m1)
-    phimatrix = phi.fit(res, y_train)
-    printer(phimatrix)
-    # np.testing.assert_array_almost_equal(phi_fin_train, phimatrix, err_msg="The phi matrix transformer is not working as expected. Check PhiMatrixTransformer")
+y_pred_ = lr.predict(X_test)
+print(f"Test accuracy score: {np.round(accuracy_score(y_test_, y_pred_) * 100, 3)}")
 
 
-    pipe = Pipeline([
-        ('scaler', pp.ScalerTransform()), 
-        ('feature', ft.PhiMatrixTransformer(polynomial_degree=m1))
-    ])
-    pipe_res = pipe.fit(X_train, y_train)
-    # pipeline working
-    # np.testing.assert_array_almost_equal(phi_fin_train, pipe_res, err_msg="The phi matrix from Pipeline is not working as expected. Check PhiMatrixTransformer")
-    break
+
