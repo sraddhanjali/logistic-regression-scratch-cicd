@@ -29,10 +29,10 @@ class ScalerTransform(OneToOneFeatureMixin, BaseEstimator, TransformerMixin):
         self.std_ = None
 
     # Pipeline expects data through fit and transform
-    def fit_transform(self, X: np.ndarray, y: Optional[np.ndarray]) -> np.ndarray:
-        return self.fit(X, y).transform(X, y)
+    def fit_transform(self, X: np.ndarray, y: np.ndarray = None) -> Tuple:
+        return self.fit(X).transform(X)
 
-    def fit(self, X: np.ndarray, y: Optional[np.ndarray]) -> 'ScalerTransform':
+    def fit(self, X: np.ndarray, y: np.ndarray = None) -> 'ScalerTransform':
         try:
             X = check_array(X)
         except AttributeError as e:
@@ -45,7 +45,7 @@ class ScalerTransform(OneToOneFeatureMixin, BaseEstimator, TransformerMixin):
             self.is_fitted_ = True        
         return self
 
-    def transform(self, X: np.ndarray, y: Optional[np.ndarray]) -> np.ndarray:
+    def transform(self, X: np.ndarray, y: np.ndarray = None) -> Tuple:
         check_is_fitted(self)
         X = check_array(X)
         return (X - self.mean_) / self.std_

@@ -10,6 +10,7 @@ class PhiMatrixTransformer(OneToOneFeatureMixin, BaseEstimator, TransformerMixin
 
     def __init__(self, polynomial_degree: int = 1):
         self.polynomial_degree = polynomial_degree
+        self.n_features_out = None
     
     def create_powers_desc(self, X: np.ndarray) -> np.ndarray:
         """ Generate powers of features (polynomial features)."""
@@ -26,15 +27,19 @@ class PhiMatrixTransformer(OneToOneFeatureMixin, BaseEstimator, TransformerMixin
                 init_features.append(new_feature)
         return np.vstack(init_features).reshape(X.shape)
     
-    def fit(self, X: np.ndarray, y: Optional[np.ndarray]) -> 'PhiMatrixTransformer':
+    def fit(self, X: np.ndarray, y: np.ndarray = None) -> 'PhiMatrixTransformer':
         check_array(X)
         self.is_fitted_ = True
-        return self.transform(X, y)
+        return self
 
-    def transform(self, X: np.ndarray, y: Optional[np.ndarray]) -> np.ndarray:
+    def fit_transform(self, X: np.ndarray, y: np.ndarray = None) -> np.ndarray:
+        return self.fit(X).transform(X)
+        
+
+    def transform(self, X: np.ndarray, y: np.ndarray = None) -> np.ndarray:
         check_is_fitted(self)
         X = check_array(X)
-
+        
         poly_features = self.create_powers_desc(X)
         interaction_features = self.create_combination_desc(X)
 
@@ -43,5 +48,8 @@ class PhiMatrixTransformer(OneToOneFeatureMixin, BaseEstimator, TransformerMixin
 
         print(bias_term.shape, poly_features.shape, interaction_features.shape)
         
-        return np.hstack([bias_term, poly_features, interaction_features])
+        transformed_X =  np.hstack([bias_term, poly_features, interaction_features])
+        self.n_features_out = transformed_X.shape
+        print(f'The size of the features is {self.n_features_out}')
+        return transformed_X
         
