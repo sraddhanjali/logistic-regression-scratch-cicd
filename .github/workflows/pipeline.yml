@@ -25,31 +25,31 @@ jobs:
         run: make lint
   
   make-format:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Make format
-      run: make format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Make format
+        run: make format
 
   make-test:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Make test
-      run: make test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Make test
+        run: make test
 
   make-all:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Make all
-      run: make all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Make all
+        run: make all
   
   docker-build-push:
     runs-on: ubuntu-latest
