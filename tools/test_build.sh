@@ -5,27 +5,33 @@ bash tools/install.sh
 source .venv/bin/activate
 # Runs the build workflow steps for testing purposes
 # Exit when any command fails
+
+set PWD /Users/sam/porfolio_workspace/Logistic-Regression-from-Scratch
 set -e
 
 # TODO lint only config.yaml file
 # python3 config.yaml
 
-python3 ml/test_mlflow.py
+# features tests
+python3 $PWD/tests/test_mlflow.py
 
 set -e
 
-python3 ml/tests/test_preprocessing.py
+python3 $PWD/tests/test_preprocessing.py
 
 set -e 
 
-python3 ml/tests/test_features.py
+python3 $PWD/tests/test_features.py
 
 set -e 
 
-python3 ml/tests/test_pipeline.py
+python3 $PWD/tests/test_pipeline.py
 
 set -e
 
+python3 $PWD/tests/test_classifier.py
+
+set -e
 
 # TODO with bite-size operations
 

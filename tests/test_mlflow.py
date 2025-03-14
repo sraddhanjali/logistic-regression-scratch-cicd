@@ -1,9 +1,13 @@
 import mlflow
+import subprocess
+from mlflow import log_metric, log_param, log_artifact
 
 # Add this at the start of your script
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
+try:
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")
+except Exception:
+    exit
 
-from mlflow import log_metric, log_param, log_artifact
 
 if __name__ == "__main__":
     log_param("threshold", 3)
