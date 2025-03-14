@@ -10,14 +10,14 @@ pipeline_edits_file = $(TEST_DIR)/test_addsteps_pipeline.py
 classifier_file = $(TEST_DIR)/test_classifier.py
 
 lint:
-	PYTHONPATH=$(TEST_DIR)/.. pylint --disable=R,C $(pipeline_file)
-	PYTHONPATH=$(TEST_DIR)/.. pylint --disable=R,C $(pipeline_edits_file)
-	PYTHONPATH=$(TEST_DIR)/.. pylint --disable=R,C $(classifier_file)
+	PYTHONPATH=$(ROOT_DIR) pylint --disable=R,C $(pipeline_file)
+	PYTHONPATH=$(ROOT_DIR) pylint --disable=R,C $(pipeline_edits_file)
+	PYTHONPATH=$(ROOT_DIR) pylint --disable=R,C $(classifier_file)
 
 test:
-	PYTHONPATH=$(TEST_DIR) coverage run -m pytest -vv $(pipeline_file)
-	PYTHONPATH=$(TEST_DIR) coverage run -m pytest -vv $(pipeline_edits_file)
-	PYTHONPATH=$(TEST_DIR) coverage run -m pytest -vv $(classifier_file)
+	PYTHONPATH=$(ROOT_DIR) coverage run -m pytest -vv $(pipeline_file)
+	PYTHONPATH=$(ROOT_DIR) coverage run -m pytest -vv $(pipeline_edits_file)
+	PYTHONPATH=$(ROOT_DIR) coverage run -m pytest -vv $(classifier_file)
 
 
 format:
@@ -26,4 +26,9 @@ format:
 coverage: 
 	coverage report -m
 
-all: install format lint test coverage
+
+installing: install
+formatting: install format
+linting: install format lint
+testing: install format lint test
+full_coverage: install format lint test coverage
