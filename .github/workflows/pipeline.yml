@@ -7,12 +7,12 @@ on:
 
 jobs:
   # docker-build-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        script: |
-          make all
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      script: |
+        make all
 
       # - name: Configure AWS Credentials
       #   uses: aws-actions/configure-aws-credentials@v4
