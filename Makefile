@@ -21,10 +21,10 @@ test:
 
 
 format:
-	black $(TEST_DIR)/*.py
+	PYTHONPATH=$(ROOT_DIR) black $(TEST_DIR)/*.py
 
 coverage: 
-	coverage report -m
+	PYTHONPATH=$(ROOT_DIR) coverage report -m
 
 
 installing: install
