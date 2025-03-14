@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Local CI/CD Pipeline
 
 on:
   push:
@@ -51,21 +51,3 @@ jobs:
       - name: Make all
         run: make full_coverage
   
-  docker-build-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Run docker build
-        run: docker build -t lr:latest .
-  
-  docker-compose-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Run docker compose
-        run: docker compose pull
-     

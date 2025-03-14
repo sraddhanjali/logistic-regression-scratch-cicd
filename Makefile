@@ -9,6 +9,9 @@ pipeline_file = $(TEST_DIR)/test_pipeline.py
 pipeline_edits_file = $(TEST_DIR)/test_addsteps_pipeline.py
 classifier_file = $(TEST_DIR)/test_classifier.py
 
+activate: 
+	source $(ROOT_DIR)/.venv/bin/activate
+
 lint:
 	PYTHONPATH=$(ROOT_DIR) pylint --disable=R,C $(pipeline_file)
 	PYTHONPATH=$(ROOT_DIR) pylint --disable=R,C $(pipeline_edits_file)
@@ -28,7 +31,7 @@ coverage:
 
 
 installing: install
-formatting: install format
-linting: install format lint
-testing: install format lint test
-full_coverage: install format lint test coverage
+formatting: install activate format
+linting: install activate format lint
+testing: install activate format lint test
+full_coverage: install activate format lint test coverage
