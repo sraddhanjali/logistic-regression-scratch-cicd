@@ -1,8 +1,9 @@
-TEST_DIR = /Users/sam/porfolio_workspace/Logistic-Regression-from-Scratch/tests
+ROOT_DIR = /Users/sam/porfolio_workspace/Logistic-Regression-from-Scratch
+TEST_DIR = $(ROOT_DIR)/tests
+TOOLS_DIR = $(ROOT_DIR)/tools
 
 install: 
-	pip install --upgrade pip &&\
-		pip install -r requirements.txt
+	/bin/bash tools/install.sh
 
 pipeline_file = $(TEST_DIR)/test_pipeline.py
 pipeline_edits_file = $(TEST_DIR)/test_addsteps_pipeline.py
