@@ -4,9 +4,9 @@ install:
 		pip install -r requirements.txt
 
 test:
-	python -m pytest -vv $(TEST_DIR)/test_classifier.py
 	python -m pytest -vv $(TEST_DIR)/test_pipeline.py
 	python -m pytest -vv $(TEST_DIR)/test_addsteps_pipeline.py
+	python -m pytest -vv $(TEST_DIR)/test_classifier.py
 
 
 format:

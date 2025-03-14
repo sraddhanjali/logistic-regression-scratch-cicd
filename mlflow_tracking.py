@@ -1,5 +1,6 @@
 import mlflow
 import mlflow.sklearn
+import numpy as np
 from ml_model import grad_descent
 from utils.utils import compute_target_vector
 

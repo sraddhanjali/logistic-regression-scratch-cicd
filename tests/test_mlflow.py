@@ -1,10 +1,12 @@
 import mlflow
-import subprocess
+import os
 from mlflow import log_metric, log_param, log_artifact
+
 
 # Add this at the start of your script
 try:
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
+    os.system("mlflow server --host 127.0.0.1 --port 5000")
 except Exception:
     exit
 
