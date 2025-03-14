@@ -6,30 +6,66 @@ on:
   workflow_dispatch:
 
 jobs:
-  local-github-push-check:
+  make-install:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          script: |
-            make all
+      
+      - name: Make install
+        run: make install
+
+  make-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Make lint
+        run: make lint
+  
+  make-format:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Make format
+      run: make format
+
+  make-test:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Make test
+      run: make test
+
+  make-all:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Make all
+      run: make all
   
   docker-build-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          script: |
-            docker build -t lr:latest .
-            
+      
+      - name: Run docker build
+        run: docker build -t lr:latest .
   
   docker-compose-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          script: |
-            docker compose pull
+      
+      - name: Run docker compose
+        run: docker compose pull
+     
