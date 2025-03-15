@@ -1,8 +1,8 @@
-version: "3.8"
+version: "3.12"
 
 services:
   app: 
-    image: build-app
+    image: lr-app
     build: .
     # ports: 
     #   - "80:80"

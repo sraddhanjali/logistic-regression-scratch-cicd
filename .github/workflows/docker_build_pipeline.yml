@@ -1,27 +1,21 @@
-name: Docker CI/CD Pipeline
+name: Docker CI/CD
 
 on:
   push:
-    branches: cicd-prod
-  workflow_dispatch:
+    branches: cicd-launch
 
 jobs:
-  
   docker-build-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Run docker build
-        run: docker build
+      # not to uncomment
+      # Used in pre-build steps to ensure dependencies are ready
+      # - name: Build the docker image (reading Dockerfile)-Docker daemon is not running yet.
+      #   run: docker compose build 
   
-  docker-compose-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Run docker compose
-        run: docker compose pull
-     
+      # used in deployment/testing to run the app
+      - name: Launch service in docker-compose.yml, build if img doesnt exist, run until job exits.
+        run: docker compose up
