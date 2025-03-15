@@ -8,7 +8,8 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 
 import sys
-sys.path.append('.')  # Add folder to Python path
+
+sys.path.append(".")  # Add folder to Python path
 
 
 def test_classifier_without_features():
@@ -19,19 +20,21 @@ def test_classifier_without_features():
     X = scaler.fit_transform(X)
 
     # Train-test split
-    X_train, X_test, y_train_, y_test_ = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train_, y_test_ = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     labelencoder_y = LabelBinarizer()
     y_train = labelencoder_y.fit_transform(y_train_)
     # Initialize weight matrix
     n_features = X_train.shape[1]  # 64 pixels
     print(f"features {n_features}")
-    n_classes = y_train.shape[1]   # 10 digits (0-9)
+    n_classes = y_train.shape[1]  # 10 digits (0-9)
     print(f"n_class {n_classes}")
     print(f"y_train {y_train.shape}")
     print(f"X_train {X_train.shape}")
     np.random.seed(42)
-  
+
     lr = ml.LogisticRegressionFromScratch(n_class=n_classes)
     lr.fit_transform(X_train, y_train)
     # print(f"original y_train {y_train_}")

@@ -1,0 +1,44 @@
+name: CI - Testing Only
+
+on:
+  push:
+    branches:
+      - cicd-prod
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run install test
+        run: |
+          make install
+      
+      - name: Run format test
+        run: | 
+          make formatting
+        
+      - name: Run lint test
+        run: |
+          make linting
+      
+      - name: Run test
+        run: |
+          make testing
+      
+      - name: Run full test
+        run: |
+          make full_coverage

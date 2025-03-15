@@ -1,6 +1,6 @@
-ROOT_DIR = /Users/sam/porfolio_workspace/Logistic-Regression-from-Scratch
-TEST_DIR = $(ROOT_DIR)/tests
-TOOLS_DIR = $(ROOT_DIR)/tools
+ROOT_DIR := $(CURDIR)
+TEST_DIR := $(ROOT_DIR)/tests
+TOOLS_DIR := $(ROOT_DIR)/tools
 
 install: 
 	/bin/bash $(TOOLS_DIR)/install.sh
@@ -11,18 +11,20 @@ classifier_file = $(TEST_DIR)/test_classifier.py
 optimizer_file = $(TEST_DIR)/test_optimizerandloss.py
 utils_file = $(TEST_DIR)/test_utils.py
 
+VENV_DIR := $(ROOT_DIR)/.venv
+ACTIVATE := source $(VENV_DIR)/bin/activate
 
 lint:
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && pylint --disable=R,C $(TEST_DIR)/*.py"
+	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "$(ACTIVATE) && pylint --disable=R,C $(TEST_DIR)/*.py"
 
 test:
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && coverage run -m pytest -vv $(TEST_DIR)/*.py"
+	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "$(ACTIVATE) && coverage run -m pytest -vv $(TEST_DIR)/*.py"
 
 format:
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && black $(TEST_DIR)/*.py"
+	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "$(ACTIVATE) && black $(TEST_DIR)/*.py"
 
 coverage: 
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && coverage report -m"
+	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "$(ACTIVATE) && coverage report -m"
 
 
 formatting: install format
