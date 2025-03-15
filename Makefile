@@ -8,18 +8,15 @@ install:
 pipeline_file = $(TEST_DIR)/test_pipeline.py
 pipeline_edits_file = $(TEST_DIR)/test_addsteps_pipeline.py
 classifier_file = $(TEST_DIR)/test_classifier.py
+optimizer_file = $(TEST_DIR)/test_optimizerandloss.py
+utils_file = $(TEST_DIR)/test_utils.py
 
 
 lint:
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && pylint --disable=R,C $(pipeline_file)"
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && pylint --disable=R,C $(pipeline_edits_file)"
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && pylint --disable=R,C $(classifier_file)"
+	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && pylint --disable=R,C $(TEST_DIR)/*.py"
 
 test:
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && coverage run -m pytest -vv $(pipeline_file)"
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && coverage run -m pytest -vv $(pipeline_edits_file)"
-	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && coverage run -m pytest -vv $(classifier_file)"
-
+	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && coverage run -m pytest -vv $(TEST_DIR)/*.py"
 
 format:
 	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && black $(TEST_DIR)/*.py"

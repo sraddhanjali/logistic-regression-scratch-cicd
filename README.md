@@ -1,6 +1,8 @@
 # Design a dockerized custom ML model 
 ### Logisitic Regression created from scratch is used as an example
 
+[![Local CI/CD Pipeline](https://github.com/sraddhanjali/logistic-regression-scratch-cicd/actions/workflows/pipeline.yml/badge.svg)](https://github.com/sraddhanjali/logistic-regression-scratch-cicd/actions/workflows/pipeline.yml)
+
 ## Features include:
 1. Dockerization compatibility
 2. Proper testing

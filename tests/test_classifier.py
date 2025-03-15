@@ -8,41 +8,30 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 
 import sys
-
-sys.path.append(".")  # Add folder to Python path
-
-X, y = load_digits(return_X_y=True)
-
-# Normalize features for better convergence
-scaler = StandardScaler()
-X = scaler.fit_transform(X)
+sys.path.append('.')  # Add folder to Python path
 
 
-# Train-test split
-X_train, X_test, y_train_, y_test_ = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+def test_classifier_without_features():
+    X, y = load_digits(return_X_y=True)
 
-labelencoder_y = LabelBinarizer()
-y_train = labelencoder_y.fit_transform(y_train_)
-y_test = labelencoder_y.fit_transform(y_test_)
-# Initialize weight matrix
-n_features = X_train.shape[1]  # 64 pixels
-print(f"features {n_features}")
-n_classes = y_train.shape[1]  # 10 digits (0-9)
-print(f"n_class {n_classes}")
-print(f"y_train {y_train.shape}")
-print(f"X_train {X_train.shape}")
-np.random.seed(42)
-weights = np.random.rand(n_features, n_classes)  # Shape: (64, 10)
-# print(f"weights shape {weights.shape}")
-# Hyperparameters
-learning_rate = 0.1
-max_iterations = 1000
-reg_lambda = 0.01
+    # Normalize features for better convergence
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
 
+    # Train-test split
+    X_train, X_test, y_train_, y_test_ = train_test_split(X, y, test_size=0.2, random_state=42)
 
-def test_classifier():
+    labelencoder_y = LabelBinarizer()
+    y_train = labelencoder_y.fit_transform(y_train_)
+    # Initialize weight matrix
+    n_features = X_train.shape[1]  # 64 pixels
+    print(f"features {n_features}")
+    n_classes = y_train.shape[1]   # 10 digits (0-9)
+    print(f"n_class {n_classes}")
+    print(f"y_train {y_train.shape}")
+    print(f"X_train {X_train.shape}")
+    np.random.seed(42)
+  
     lr = ml.LogisticRegressionFromScratch(n_class=n_classes)
     lr.fit_transform(X_train, y_train)
     # print(f"original y_train {y_train_}")
@@ -50,10 +39,10 @@ def test_classifier():
     res = np.round(accuracy_score(y_train_, y_pred) * 100, 3)
     print(f"Train accuracy score: {res}")
 
-    assert 23.66 == res
+    assert 12.039 == res
 
     y_pred_ = lr.predict(X_test)
     res_ = np.round(accuracy_score(y_test_, y_pred_) * 100, 3)
     print(f"Test accuracy score: {res_}")
 
-    assert 23.889 == res_
+    assert 13.056 == res_

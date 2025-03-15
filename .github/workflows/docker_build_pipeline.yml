@@ -1,0 +1,27 @@
+name: Docker CI/CD Pipeline
+
+on:
+  push:
+    branches: cicd-prod
+  workflow_dispatch:
+
+jobs:
+  
+  docker-build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run docker build
+        run: docker build -t lr:latest .
+  
+  docker-compose-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run docker compose
+        run: docker compose pull
+     

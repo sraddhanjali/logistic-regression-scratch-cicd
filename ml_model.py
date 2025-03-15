@@ -1,5 +1,5 @@
 import numpy as np
-import sys, os
+import os
 from utils.utils import custom_softmax, compute_target_vector, mapping_prob_to_class, accuracy
 from utils.config import CONFIG
 from utils.preprocessing import ScalerTransform
@@ -16,9 +16,8 @@ import logging as l
 from typing import List
 
 
-debug_logger = l.Logger("debug", level=l.DEBUG)
-error_logger = l.Logger("error", level=l.ERROR)
-info_logger = l.Logger("info", level=l.INFO)
+logger = l.Logger('LogisticRegressionLogger')
+
 
 class GradientDescentOptimizer:
     def __init__(self) -> None:
@@ -46,9 +45,9 @@ class GradientDescentOptimizer:
         y_new = custom_softmax(y)
         # Ensure shapes match
         if y.shape != y_new.shape:
-            error_logger.log(level=l.ERROR, msg=str(f"shape mismatch: y shape {y.shape} and custom softmaxed y: {y_new}"))
+            logger.error(msg=str(f"shape mismatch: y shape {y.shape} and custom softmaxed y: {y_new}"))
             raise ValueError(f"Shape mismatch: y ")
-        info_logger.log(level=l.INFO, msg=str(f"n_samples {n_samples} - n_class {n_class} - y shape {y.shape}"))
+        logger.info(msg=str(f"n_samples {n_samples} - n_class {n_class} - y shape {y.shape}"))
         y_sh = y_new.reshape((n_samples* n_class), 1)
         # Compute cross-entropy loss safely
         target_vec_sh = (target_vec.reshape((n_samples*n_class), 1)).T
@@ -76,11 +75,9 @@ class GradientDescentOptimizer:
             self.cost_history.append(cost)
 
     def fit(self, X: np.ndarray, target_vec: np.ndarray, n_class: int) -> 'GradientDescentOptimizer':
-        # print("Gradient Descent fit got called", y.shape)
         self.curr_weight = X
         self.grad_descent(
             X, self.l_rate, self.max_iteration, target_vec, self.reg_param_lambda, n_class)
-        # print(f"Final weight: {self.curr_weight}, Final cost: {self.cost_history}")
         self.is_fitted_ = True
         return self
     
@@ -88,7 +85,6 @@ class GradientDescentOptimizer:
 class LogisticRegressionFromScratch(BaseEstimator, TransformerMixin):
 
     def __init__(self, n_class) -> None:
-        # maintain state of learnable parameters over training etc.
         self.l_rate = CONFIG["l_rate"]
         self.max_iteration = CONFIG["max_iteration"]
         self.reg_param_lambda = CONFIG["reg_param_lambda"]
@@ -98,10 +94,10 @@ class LogisticRegressionFromScratch(BaseEstimator, TransformerMixin):
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> 'LogisticRegressionFromScratch':
         target_vec = compute_target_vector(y, self.n_class)
-        print(f"y before : {y.shape} -  target vector shape: {target_vec.shape} - n_class {self.n_class}") 
+        logger.info(f"y before : {y.shape} -  target vector shape: {target_vec.shape} - n_class {self.n_class}") 
         self.opt = self.opt.fit(X, target_vec, self.n_class)
         self.weights = self.opt.curr_weight
-        print(f'weights after fitting - {self.weights.shape}')
+        logger.info(f'weights after fitting - {self.weights.shape}')
         self.is_fitted_ = True
         return self
 
@@ -115,26 +111,13 @@ class LogisticRegressionFromScratch(BaseEstimator, TransformerMixin):
     def summary(self) -> str:
         return "summary"
 
-    def predict_(self, X: np.ndarray, y: np.ndarray=None) -> np.ndarray:
-        print(f"predict is being called on test_dataset")
-        y_target = compute_target_vector(y, self.n_class)
-        print(f"y before : {y.shape} -  target vector shape: {y_target.shape}")
-
-        y_log_t = (X @ self.weights).T
-        print(y_log_t.shape)
-        y_logistic = custom_softmax(y_log_t)
-        print(y_logistic.shape)
-        mapped_y_pred = mapping_prob_to_class(y_logistic)
-        return mapped_y_pred
-
-    def predict(self, X: np.ndarray, y: np.ndarray=None) -> np.ndarray:
-        print(f"predict is being called on test_dataset")
+    def predict(self, X: np.ndarray, y: np.ndarray=None) -> List:
+        logger.info(f"predict is being called on test_dataset")
         y_log_t = (X @ self.weights)
-        print(f"Predictions {y_log_t.shape}")
+        logger.info(f"Predictions {y_log_t.shape}")
         y_logistic = custom_softmax(y_log_t)
-        print(f"custom softmaxed {y_logistic.shape}")
+        logger.info(f"custom softmaxed {y_logistic.shape}")
         mapped_y_pred = mapping_prob_to_class(y_logistic)
-        # print(f"mapped prob to class {len(mapped_y_pred)} {mapped_y_pred}")
         return mapped_y_pred
 
     def plot_convergence(self) -> None:
@@ -142,9 +125,13 @@ class LogisticRegressionFromScratch(BaseEstimator, TransformerMixin):
         plt.title('Cost Function')
         plt.xlabel('Iterations')
         plt.ylabel('J_cost')
-        plt.show()
-
+        plt.show(block=False) # non blocking show
+        plt.pause(2) # pause for 5 seconds
+        plt.close() # close the plot
+        
     def save_checkpoint(self, filename: str) -> None:
-        curr_dir = sys.path('.')
-        file_path = os.path.join(curr_dir, "models", filename)
-        np.savez(file_path, weights=self.pipeline.named_steps['gradient_descent'].curr_weight)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(script_dir)
+        models_dir = os.path.join(parent_dir, "models")
+        file_path = os.path.join(models_dir, filename)
+        np.savez(file_path, weights=self.weights)
