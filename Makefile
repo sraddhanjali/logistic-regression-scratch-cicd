@@ -25,8 +25,7 @@ coverage:
 	PYTHONPATH=$(ROOT_DIR) /bin/bash -c "source .venv/bin/activate && coverage report -m"
 
 
-installing: install
-formatting: install activate format
-linting: install activate format lint
-testing: install activate format lint test
+formatting: install format
+linting: install format lint
+testing: install format lint test
 full_coverage: install format lint test coverage
