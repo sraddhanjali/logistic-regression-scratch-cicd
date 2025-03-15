@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: docker build/test/close 
 
 on:
   push:
