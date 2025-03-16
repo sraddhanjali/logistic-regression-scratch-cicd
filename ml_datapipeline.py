@@ -21,7 +21,6 @@ class DataPipeline:
             self.feat = feat.PhiMatrixTransformer(polynomial_degree=int(self.config["m1"]))
         self.seed = int(self.config["seed"])
         self.test_size = float(self.config["test_size"])
-        return self
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as file:
@@ -38,14 +37,12 @@ class DataPipeline:
     def load_real_datasets(dataset_name):
         """Load predefined datasets."""
         if dataset_name == "iris":
-            data = load_iris()
+            df = load_iris(as_frame=True)
         elif dataset_name == "digits":
-            data = load_digits()
+            df = load_digits(as_frame=True)
         else:
             raise ValueError(f"Unsupported dataset: {dataset_name}")
         
-        df = pd.DataFrame(data.data, columns=[f"feature_{i}" for i in range(data.data.shape[1])])
-        df["target"] = data.target
         return df
 
     def detect_new_data(self):
@@ -64,8 +61,8 @@ class DataPipeline:
 
     def preprocess_and_split(self, df):
         """Preprocess features and split dataset."""
-        X = df.drop(columns=["target"])
-        y = df["target"]
+        y = df['target']
+        X = df.drop(columns=['target'])
         if self.scaler:
             X = self.scaler.fit_transform(X)
         if self.feat:
@@ -85,9 +82,13 @@ class DataPipeline:
         print("Data Pipeline Execution Completed.")
 
     def get_data(self):
-        csv_f = os.path.join(self.config["output_path"], self.config["source"], "train.csv")
-        return self.preprocess_and_split(pd.read(csv_f))
+        root_dir = self.config["data_pipelines"]["batch"]
+        output_dir = root_dir["output_path"]
+        data_dir = root_dir["source"]
+        csv_f = os.path.join(output_dir, data_dir, "train.csv")
+        return self.preprocess_and_split(pd.read_csv(csv_f))
 
 if __name__ == "__main__":
     pipeline = DataPipeline()
     pipeline.run()
+    pipeline.get_data()

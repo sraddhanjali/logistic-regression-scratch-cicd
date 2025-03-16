@@ -12,7 +12,7 @@ from ml_datapipeline import DataPipeline
 def test_data_pipeline():
     # Train-test split
     pipe = DataPipeline()
-    X_train, X_test, y_train_, y_test_ = pipe.run()
+    X_train, X_test, y_train_, y_test_ = pipe.get_data()
 
     labelencoder_y = LabelBinarizer()
     y_train = labelencoder_y.fit_transform(y_train_)
