@@ -2,6 +2,7 @@ import yaml
 import pandas as pd
 import numpy as np
 import os
+
 from sklearn.datasets import load_iris, load_digits
 from sklearn.model_selection import train_test_split
 
@@ -9,16 +10,18 @@ import sys
 sys.path.append(".")  # Add folder to Python path
 from utils import preprocessing as pp
 from utils import features as feat
-
+     
 class DataPipeline:
     def __init__(self, scale: bool = True, augment_feature: bool = False, config_path: str="config.yml"):
         """Initialize pipeline with dataset triggers."""
         self.config = self.load_config(config_path)
         self.scaler = pp.ScalerTransform() if scale else None
-        if "polynomial"
-        self.augment = feat.PhiMatrixTransformer() if augment_feature else None
+        self.feat = None
+        if self.config["m1"] and augment_feature:
+            self.feat = feat.PhiMatrixTransformer(polynomial_degree=int(self.config["m1"]))
         self.seed = int(self.config["seed"])
         self.test_size = float(self.config["test_size"])
+        return self
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as file:
@@ -65,6 +68,8 @@ class DataPipeline:
         y = df["target"]
         if self.scaler:
             X = self.scaler.fit_transform(X)
+        if self.feat:
+            X = self.feat.fit_transform(X)
         return train_test_split(X, y, test_size=self.test_size, random_state=self.seed)
 
     def store_data(self, X_train, X_test, y_train, y_test, dataset_name):
@@ -79,6 +84,9 @@ class DataPipeline:
         self.detect_new_data()
         print("Data Pipeline Execution Completed.")
 
+    def get_data(self):
+        csv_f = os.path.join(self.config["output_path"], self.config["source"], "train.csv")
+        return self.preprocess_and_split(pd.read(csv_f))
 
 if __name__ == "__main__":
     pipeline = DataPipeline()

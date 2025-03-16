@@ -14,7 +14,7 @@ model:
   
 data_pipelines:
   batch:
-    source: "" # use some source csv if  needed inside data folder
+    source: "synthetic" # use some source csv if  needed inside data folder
     target_column: "label"
     output_path: "data/"
     drift_threshold: 0.05 # if KL divergence exceeds, retrain the model
