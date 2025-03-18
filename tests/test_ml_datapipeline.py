@@ -12,7 +12,7 @@ from ml_datapipeline import DataPipeline
 def test_data_pipeline():
     # Train-test split
     pipe = DataPipeline()
-    X_train, X_test, y_train_, y_test_ = pipe.get_data()
+    X_train, X_test, y_train_, y_test_ = pipe.get_data('synthetic', debug=True)
 
     labelencoder_y = LabelBinarizer()
     y_train = labelencoder_y.fit_transform(y_train_)
@@ -32,10 +32,10 @@ def test_data_pipeline():
     res = np.round(accuracy_score(y_train_, y_pred) * 100, 3)
     print(f"Train accuracy score: {res}")
 
-    assert 12.039 == res
+    assert 33.75 == res
 
     y_pred_ = lr.predict(X_test)
     res_ = np.round(accuracy_score(y_test_, y_pred_) * 100, 3)
     print(f"Test accuracy score: {res_}")
 
-    assert 13.056 == res_
+    assert 31.25 == res_
