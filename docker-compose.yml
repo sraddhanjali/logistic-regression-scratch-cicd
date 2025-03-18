@@ -1,8 +1,27 @@
 version: "3.12"
 
 services:
-  app: 
-    image: lr-app
-    build: .
+  data_pipeline: 
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    container_name: data_pipeline
+    restart: "no"
+
+  model_training:
+    build:
+      context: .
+      dockerfile: Dockerfile.train
+    container_name: model_training
+    restart: "no"
+  
+  model_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api 
+    container_name: model_api
+    ports:
+      - "8000:8000"
+    restart: always
     # ports: 
     #   - "80:80"

@@ -53,15 +53,11 @@
 
         │── ml_model.py             Main model training script
 
-        │── train.py                Training pipeline script
-
-        │── mlflow_tracking.py      MLflow integration
+        │── data_pipeline.py        script to generate synthetic data.
 
         │── Dockerfile              Docker setup
 
         │── requirements.txt        Dependencies
-
-        │── run_offline.py          Offline testing scenario
 
         │── README.md               Documentation
 

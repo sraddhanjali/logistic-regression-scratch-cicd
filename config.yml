@@ -1,25 +1,47 @@
-seed: 100
-n_samples: 1000
-n_class: 3
-fold: 2
-m1: 1
+seed: 42 # seed used in all of the random seed generation purposes
+n_sample: 1000 # default - used for synthetic dataset generation
+n_class: 3 # default class - used for synthetic dataset generation
+n_feature: 5 # for synthetic datasets
+fold: 2 # kfold default
+m1: 1 # polynomial degree
 l_rate: 0.05
 max_iteration: 500
 reg_param_lambda: 0.00001
-polys: "[i for i in range(1, m1 + 1)]"
-test_size: 0.3
+test_size: 0.2
 
-data:
-  train_data: "data/processed/train.pkl"
-  test_data: "data/processed/test.pkl"
-  raw_data: "data/raw/iris_data.csv"
-  new_data: "data/new_data.csv" # for new data checks
+dataset: ["synthetic", "iris", "digits"]
+data_dir: &data_dir "data/"
+file_patterns: ["train.csv", "test.csv"]
 
 model:
-  saved_model: "models/saved_model.pkl"
-  offline_model: "models/offline_model.pkl"
+  training_model: &train_model "models/training_model.pkl"
+  best_model: &live_model "models/best_model.pkl"
+  
+data_pipelines:
+  batch:
+    source: "synthetic" # use some source csv if  needed inside data folder
+    target_column: "label"
+    output_path: *data_dir
+    drift_threshold: 0.05 # if KL divergence exceeds, retrain the model
+  
+  stream:
+    source: "real_time_topic" # kafka topic name
+    target_column: "label"
+    output_path: "stream_post_process/"
+    bootstrap_servers: "localhost:9092"
+    batch_size: 100 # no. of messages to accuulate before storing
 
 mlflow: 
-  tracking_uri: "http://localhost:5000"
+  tracking_uri: "https://localhost:5000"
+  experiment_name: "logistic_regression_experiment"
 
-    
+training:
+  model_path: *train_model # reference to above model types
+  test_size: 0.2
+  retrain: true
+
+deployment:
+  model_path: *live_model # reference to model that is launched
+  
+  
+
