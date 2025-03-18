@@ -1,12 +1,17 @@
 seed: 42 # seed used in all of the random seed generation purposes
-n_samples: 1000 # default - used for synthetic dataset generation
+n_sample: 1000 # default - used for synthetic dataset generation
 n_class: 3 # default class - used for synthetic dataset generation
+n_feature: 5 # for synthetic datasets
 fold: 2 # kfold default
 m1: 1 # polynomial degree
 l_rate: 0.05
 max_iteration: 500
 reg_param_lambda: 0.00001
 test_size: 0.2
+
+dataset: ["synthetic", "iris", "digits"]
+data_dir: &data_dir "data/"
+file_patterns: ["train.csv", "test.csv"]
 
 model:
   training_model: &train_model "models/training_model.pkl"
@@ -16,7 +21,7 @@ data_pipelines:
   batch:
     source: "synthetic" # use some source csv if  needed inside data folder
     target_column: "label"
-    output_path: "data/"
+    output_path: *data_dir
     drift_threshold: 0.05 # if KL divergence exceeds, retrain the model
   
   stream:
