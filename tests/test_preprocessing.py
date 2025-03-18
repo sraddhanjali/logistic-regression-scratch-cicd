@@ -18,8 +18,8 @@ def test_preprocessor():
     np.testing.assert_array_almost_equal(res, lib_res)
 
 def test_processor_with_datapipeline():
-    X,_,_,_ = DataPipeline().get_data()
-    
+    X,_,_,_ = DataPipeline().get_data(dataset='synthetic', debug=True)
+
     lib_scaler = StandardScaler()
     lib_res = lib_scaler.fit_transform(X)
     print(f"Result from lib is : {lib_res}")
