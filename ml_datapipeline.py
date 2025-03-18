@@ -110,7 +110,7 @@ class DataPipeline:
             self.detect_n_create_new_dataset(dataset)
         print("Data Pipeline Execution Completed.")
 
-    def get_data(self, dataset: str, debug: False) -> list:
+    def get_data(self, dataset: str='synthetic', debug: bool=False) -> list:
         self.debug = debug
         print(f"Debug mode enabled: might lose datasets - use wisely and create backup of data before proceeding")
         if self.detect_n_create_new_dataset(dataset):

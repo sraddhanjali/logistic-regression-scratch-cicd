@@ -31,9 +31,17 @@
 
         │── tests/                  Unit tests
 
-           │──  test_utils.py       
+           │──  test_classifier.py       
 
-           │──  test_ml_model.py 
+           │──  test_ml_datapipeline.py 
+
+           │──  test_optimizerandloss.py 
+
+           │──  test_pipeline.py 
+
+           │──  test_preprocessing.py 
+
+           │──  test_utils.py 
 
         │── tools/
         
@@ -53,7 +61,7 @@
 
         │── ml_model.py             Main model training script
 
-        │── data_pipeline.py        script to generate synthetic data.
+        │── ml_datapipeline.py      Make dataset according to config yml.
 
         │── Dockerfile              Docker setup
 
