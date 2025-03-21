@@ -30,7 +30,7 @@ jobs:
       
       - name: Run tests
         id: test
-        run |
+        run: |
           pytest -vv || echo "test failed" > test-failure.flag
 
       - name: Create GitHub issue if tests fail
