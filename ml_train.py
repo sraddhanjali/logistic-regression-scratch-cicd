@@ -43,49 +43,63 @@ def skip_if_tracked(func):
     return wrapper
 
 def ensure_remote_not_exists(func):
-    """Decorator factory to skip remote creation if it already exists."""
+    """Decorator to skip remote creation if it already exists."""
     @wraps(func)
-    def wrapper(remote_name, *args, **kwargs):
+    def wrapper(storage, name, *args, **kwargs):
         result = subprocess.run(["dvc", "remote", "list"], capture_output=True, text=True)
-        if remote_name in result.stdout:
-            print(f"✅ Remote '{remote_name}' already exists. Skipping.")
+        print(f"Type of the file is {type(name)}")
+        if name in result.stdout:
+            print(f"✅ Remote '{name}' already exists. Skipping.")
             return
-        return func(*args, **kwargs)
+        return func(storage, name, *args, **kwargs)
+    return wrapper
+
+
+def get_all_nested_files(func):
+    """Decorator to yield files if dir is provided and not being tracked."""
+    @wraps(func)
+    def wrapper(_path, *args, **kwargs):
+        if os.path.isdir(_path):
+            files = glob.glob(f"{_path}/*.csv", recursive=True)
+            for f in files:
+                yield f
+            yield func(f, *args, **kwargs)
+        if os.path.isfile(_path):
+            return func(_path, *args, **kwargs)
     return wrapper
 
 class DVCManager:
-    def __init__(self, dvc_config):
+    def __init__(self, dvc_config=None):
         self.dvc_config = dvc_config
 
+    @staticmethod
     @skip_if_tracked
-    def version_data(self, f_path):
+    def version_data(f_path):
         subprocess.run(["dvc", "add", f_path], check=True)
         subprocess.run(["git", "add", f"{f_path}.dvc", ".gitignore"])
         os.system("git commit -m 'Version dataset'")
         os.system("dvc push")
 
+    @staticmethod
     @ensure_dvc_initialized
-    @ensure_remote_not_exists("myremote")
-    def add_remote(self):
-        name = "myremote"
-        url = self.dvc_config["remote_storage"]
+    @ensure_remote_not_exists
+    def add_remote(storage, name):
+        name = name
+        url = storage
         subprocess.run(["dvc", "remote", "add", "-d", name, url], check=True)
         print(f"🚀 DVC remote '{name}' added.")
-
-    @ensure_dvc_initialized
-    @ensure_remote_not_exists("localremote")
-    def add_local_remote(self):
-        name = "localremote"
-        url = self.dvc_config["local_storage"]
-        subprocess.run(["dvc", "remote", "add", "-d", name, url], check=True)
-        print(f"🚀 DVC local remote '{name}' added.")
     
     def setup_remote(self):
-        if bool(self.dvc_config["remote"]):
-            self.add_local_remote()
+        if f"{self.dvc_config['remote']}":
+            DVCManager.add_remote(self.dvc_config["remote_storage"], "myremote")
+            print(f"🚀 myremote DVC remote added.")
         else:
-            self.add_remote()
-            
+            DVCManager.add_remote(self.dvc_config["local_storage"], "localremote")
+            print(f"🚀 local_remote DVC remote added.")
+
+    
+    @get_all_nested_files
+    @skip_if_tracked
     def version(self, d):
         subprocess.run(["dvc", "add", f"{d}"])
         subprocess.run(["git", "add", f"{d}"])
@@ -161,10 +175,9 @@ class ModelTrainer:
 
             self.version_with_dvc(model_file, dataset_path)
 
-
     def version_with_dvc(self, model, data):
         """Use DVC to version the model and data."""
-        dvc_manager = DVCManager(config=self.config)
+        dvc_manager = DVCManager(dvc_config=self.config["dvc"])
         dvc_manager.setup_remote()
         dvc_manager.version(data)
         dvc_manager.version(model)
