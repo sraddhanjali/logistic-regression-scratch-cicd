@@ -14,20 +14,84 @@ from ml_model import LogisticRegressionFromScratch
 from sklearn.metrics import accuracy_score
 from ml_datapipeline import DataPipeline
 from pathlib import Path
+import glob
 
+import os
+from functools import wraps
+import subprocess
 
-# class ModelTrainerFlow(FlowSpec):
+def ensure_dvc_initialized(func):
+    """Decorator to initialize DVC repo if not already."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if not os.path.exists(".dvc"):
+            print("🛠 Initializing DVC...")
+            subprocess.run(["dvc", "init"], check=True)
+        else:
+            print("✅ DVC already initialized.")
+        return func(*args, **kwargs)
+    return wrapper
 
-#     @step
-#     def load_config(self):
-#         self.config = self.load_config("config.yml")
-#         self.max_iteration = self.config["max_iteration"]
-#         self.mlflow_uri = self.config["mlflow"]["tracking_uri"]
-#         self.mlflow_experimentname = self.config["mlflow"]["experiment_name"]
-#         self.mlflow_port = self.config["mlflow"]["default_port"]
-#         self.model_path = self.config["training"]["model_path"]
-#         self.requested_dataset = self.config["data_pipelines"]["requested_dataset"]
-#         self.dvc_remote = self.config["dvc"]["remote_storage"]
+def skip_if_tracked(func):
+    """Skip DVC add if file is already tracked."""
+    @wraps(func)
+    def wrapper(filepath, *args, **kwargs):
+        if os.path.exists(filepath + ".dvc"):
+            print(f"✅ File '{filepath}' already tracked by DVC. Skipping.")
+            return
+        return func(filepath, *args, **kwargs)
+    return wrapper
+
+def ensure_remote_not_exists(func):
+    """Decorator factory to skip remote creation if it already exists."""
+    @wraps(func)
+    def wrapper(remote_name, *args, **kwargs):
+        result = subprocess.run(["dvc", "remote", "list"], capture_output=True, text=True)
+        if remote_name in result.stdout:
+            print(f"✅ Remote '{remote_name}' already exists. Skipping.")
+            return
+        return func(*args, **kwargs)
+    return wrapper
+
+class DVCManager:
+    def __init__(self, dvc_config):
+        self.dvc_config = dvc_config
+
+    @skip_if_tracked
+    def version_data(self, f_path):
+        subprocess.run(["dvc", "add", f_path], check=True)
+        subprocess.run(["git", "add", f"{f_path}.dvc", ".gitignore"])
+        os.system("git commit -m 'Version dataset'")
+        os.system("dvc push")
+
+    @ensure_dvc_initialized
+    @ensure_remote_not_exists("myremote")
+    def add_remote(self):
+        name = "myremote"
+        url = self.dvc_config["remote_storage"]
+        subprocess.run(["dvc", "remote", "add", "-d", name, url], check=True)
+        print(f"🚀 DVC remote '{name}' added.")
+
+    @ensure_dvc_initialized
+    @ensure_remote_not_exists("localremote")
+    def add_local_remote(self):
+        name = "localremote"
+        url = self.dvc_config["local_storage"]
+        subprocess.run(["dvc", "remote", "add", "-d", name, url], check=True)
+        print(f"🚀 DVC local remote '{name}' added.")
+    
+    def setup_remote(self):
+        if bool(self.dvc_config["remote"]):
+            self.add_local_remote()
+        else:
+            self.add_remote()
+            
+    def version(self, d):
+        subprocess.run(["dvc", "add", f"{d}"])
+        subprocess.run(["git", "add", f"{d}"])
+    
+    def push_all(self):
+        subprocess.run(["dvc", "push"])
 
 class ModelTrainer:
     def __init__(self, config_path="config.yml"):
@@ -38,7 +102,6 @@ class ModelTrainer:
         self.mlflow_port = self.config["mlflow"]["default_port"]
         self.model_path = self.config["training"]["model_path"]
         self.requested_dataset = self.config["data_pipelines"]["requested_dataset"]
-        self.dvc_remote = self.config["dvc"]["remote_storage"]
 
     def load_config(self, config_path):
         with open(config_path, "r") as file:
@@ -48,35 +111,6 @@ class ModelTrainer:
         """Request dataset dynamically from the pipeline."""
         pipeline = DataPipeline()
         return pipeline.get_data(dataset=self.requested_dataset)  # Returns (X_train, X_test, y_train, y_test)
-
-    @staticmethod
-    def find_free_port(default_port=5000):
-        """Find an available port if the default is taken."""
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            if s.connect_ex(("localhost", default_port)) == 0:  # Port is taken
-                s.close()
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.bind(("", 0))  # Bind to an available ephemeral port
-                free_port = s.getsockname()[1]
-                return s.getsockname()[1]
-            else:
-                free_port = default_port  # Default port is available
-        return free_port  # Port 5000 is free
-    
-    def give_mlflow_time_to_start(self, port):
-        for _ in range(10):  # Retry for ~10 seconds
-            time.sleep(2)
-            import requests
-            try:
-                if requests.get(f"http://localhost:{port}").status_code == 200:
-                    print(f"✅ MLflow is running on port {port}")
-                    return
-            except requests.ConnectionError:
-                print("❌ MLflow did not start in time. Check mlflow.log for errors.")
-            # time.sleep(5)  # Give MLflow some time to start
-        
-        exit(1)
     
     def start_mlflow_server(self):
         """Start MLflow server in the background and log output."""
@@ -87,19 +121,13 @@ class ModelTrainer:
             "--port", f"{self.mlflow_port}"
         ], stdout=log_file, stderr=log_file, start_new_session=True)
         print(f"🚀 Starting MLflow tracking server on port {self.mlflow_port}...")
-
-        # self.give_mlflow_time_to_start(self.mlflow_port)
-        print(f"🚀 Started MLflow tracking server on port {self.mlflow_port}...")
         return process
-
 
     def train(self, X_train, X_test, y_train, y_test):
         """Train and save model with MLflow & DVC."""
-        
         self.start_mlflow_server()
         mlflow.set_tracking_uri(f"http://localhost:{self.mlflow_port}")
         exp = mlflow.set_experiment(self.mlflow_experimentname)       
-
         print(f'experiment starting {exp.experiment_id}')
         with mlflow.start_run():
             print(f"starting the run")
@@ -116,37 +144,31 @@ class ModelTrainer:
             mlflow.log_param("model", "LogisticRegression")
             mlflow.log_metric("accuracy", acc)
 
+            #dataset path
+            dataset_path = os.path.join(self.config["data_dir"], self.requested_dataset)
+            mlflow.log_param("dataset_path", dataset_path)
+
             # Save model
             model_dir = f"models/{self.requested_dataset}/"
             os.makedirs(model_dir, exist_ok=True)
             mlflow.log_artifact(model_dir)
-
+    
             model_file = os.path.join(os.getcwd(), self.config["model"]["model_dir"], self.requested_dataset + "_" + self.config["model"]["training_model"])
-            
             with open(model_file, "wb") as f:
                 pickle.dump(model, f)
             mlflow.log_artifact(model_file)
-            mlflow.log_artifact(self.dvc_remote)
             print(f"Model saved at {model_file} with accuracy: {acc}")
-            # Track model & dataset with DVC    
-            self.version_with_dvc(model_file)
 
-    def version_with_dvc(self, model_file):
+            self.version_with_dvc(model_file, dataset_path)
+
+
+    def version_with_dvc(self, model, data):
         """Use DVC to version the model and data."""
-        os.system("dvc init")
-        os.system(f"dvc remote add -d myremote {self.dvc_remote}")
-
-        for f in os.listdir(os.path.join(os.getcwd(), self.config["data_dir"], self.requested_dataset)):
-            os.system(f"dvc add {f}")
-            os.system(f"git add {f}.dvc .gitignore")
-        os.system("git commit -m 'Version dataset'")
-        os.system("dvc push")
-
-        # Track model
-        os.system(f"dvc add {model_file}")
-        os.system(f"git add {model_file}.dvc")
-        os.system("git commit -m 'Version model'")
-        os.system("dvc push")
+        dvc_manager = DVCManager(config=self.config)
+        dvc_manager.setup_remote()
+        dvc_manager.version(data)
+        dvc_manager.version(model)
+        dvc_manager.push_all()
 
     def run(self):
         """Execute model training and versioning."""
