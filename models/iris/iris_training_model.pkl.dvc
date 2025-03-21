@@ -1,0 +1,5 @@
+outs:
+- md5: 489b7dcdee40b914003ba98740395027
+  size: 806
+  hash: md5
+  path: iris_training_model.pkl
