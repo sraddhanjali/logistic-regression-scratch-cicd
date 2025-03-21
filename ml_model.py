@@ -1,7 +1,6 @@
 import numpy as np
 import os
 from utils.utils import custom_softmax, compute_target_vector, mapping_prob_to_class, accuracy
-from utils.config import CONFIG
 from utils.preprocessing import ScalerTransform
 from utils.features import PhiMatrixTransformer, TransformerMixin
 from typing import Optional

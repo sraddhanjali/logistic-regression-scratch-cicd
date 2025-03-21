@@ -13,7 +13,6 @@ dataset: ["synthetic", "iris", "digits"]
 data_dir: &data_dir "data/"
 file_patterns: ["train.csv", "test.csv"]
 
-
 model:
   model_dir: "models/"
   training_model: &train_model "training_model.pkl"
@@ -22,23 +21,22 @@ model:
 data_pipelines:
   requested_dataset: "iris"
 
-  batch:
-    source: "synthetic" # use some source csv if  needed inside data folder
-    target_column: "label"
-    output_path: *data_dir
-    drift_threshold: 0.05 # if KL divergence exceeds, retrain the model
-
 mlflow: 
-  tracking_uri: "https://localhost:5000"
+  tracking_uri: "https://localhost:54058"
   default_port: 54058
   experiment_name: "lr_iris_train_experiment"
+  log_file: "mlruns/mlflow.log"
 
 training:
+  model_dir: "models/"
+  training_model: "training_model.pkl"
   model_path: *train_model # reference to above model types
   test_size: 0.2
   retrain: true
 
 deployment:
+  best_model: "best_model.pkl"
+  backup_model: *train_model
   model_path: *live_model # reference to model that is launched
 
 # anchors and aliases
