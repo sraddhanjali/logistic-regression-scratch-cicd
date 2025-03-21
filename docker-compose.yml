@@ -1,6 +1,12 @@
 version: "3.12"
 
 services:
+  auto-issue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auto-issue
+    restart: "no"
   data_pipeline: 
     build:
       context: .

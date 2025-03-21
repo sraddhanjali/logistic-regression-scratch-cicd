@@ -3,7 +3,7 @@ import mlflow
 import sys
 import os
 sys.path.append(".")
-from utils.config import load_config, yield_yaml_params_to_mlflow
+from utils.config import load_config
 import time
 
 class MLflowManager:
@@ -14,12 +14,6 @@ class MLflowManager:
         self.mlflow_uri = self.mlflow_config["tracking_uri"]
         self.mlflow_experimentname = self.mlflow_config["experiment_name"]
         self.mlflow_port = self.mlflow_config["default_port"]
-
-    def __
-    
-    def log_all_configs(self):
-        for val in yield_yaml_params_to_mlflow:
-            mlflow.log_param(val[0], val[1])
 
     def start(self):
         """Start MLflow server in the background and keep track of it."""
@@ -42,14 +36,19 @@ class MLflowManager:
         if not info:
             mlflow.log_param("no info", 1)
             return
-        mlflow.log_artifact(info[0])
-        mlflow.log_param("model_dir", info[1])
-        mlflow.log_artifact(info[2])
-        mlflow.log_param("requested_data", info[3])
-        mlflow.log_param("classifier", info[4])
-        mlflow.log_metric("accuracy", info[5])
-        mlflow.log_artifact(info[6])
-        mlflow.log_all_configs()
+        for k, v in info.get("params", {}).items():
+            mlflow.log_param(k, v)
+
+        for k, v in info.get("metrics", {}).items():
+            mlflow.log_metric(k, v)
+
+        for path in info.get("artifacts", []):
+            mlflow.log_artifact(path)
+
+        # Optional config logging
+        if "configs" in info:
+            for k, v in info["configs"].items():
+                mlflow.log_param(f"{k}", v)
     
     def stop(self):
         """Stop the MLflow server if it's running."""
@@ -62,7 +61,7 @@ class MLflowManager:
             print("⚠️ No MLflow process to stop.")
 
 if __name__ == "__main__":
-    mlflow_server = MLflowManager(mlflow_config=load_config()))
+    mlflow_server = MLflowManager(mlflow_config=load_config())
     mlflow_server.start()
     mlflow_server.log()
     mlflow_server.stop()

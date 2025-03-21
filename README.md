@@ -17,17 +17,11 @@
 
         │── data/                   Data folder (bind-mounted in Docker)
             
-            │── processed/
+            │── <dataset-name>/
             
-                │── testing_data/
-                
-                │── training_data/
 
         │── models/                 Trained models saved here
         
-            │── offline_model.pkl
-            
-            │── saved_model.pkl
 
         │── tests/                  Unit tests
 
@@ -49,21 +43,39 @@
             
             │── test_build.sh
 
-        │── utils/                  
+        │── utils/     
+
+           ├── config.py           Script to tackle configurations             
 
            ├── utils.py            General utility functions
 
            ├── preprocessing.py    Preprocessing functions
-        
+
+           ├── dvc_manager.py      DVC wrapper
+
+           ├── mlflow_manager.py   Mlflow wrapper    
+
+           ├── features.py         Make features such as first, second degree polynomials   
+
         │── docker-compose.yml
 
         │── config.yml
 
-        │── ml_model.py             Main model training script
+        │── ml_model.py             Main model building script
 
-        │── ml_datapipeline.py      Make dataset according to config yml.
+        │── ml_datapipeline.py      Make dataset according to config yml
+
+        ├── ml_train.py             Main model training script
+
+        ├── model_api.py            Model served as app service
 
         │── Dockerfile              Docker setup
+
+        │── Dockerfile.api          Docker api setup
+
+        │── Dockerfile.pipeline     Docker pipeline setup
+
+        │── Dockerfile.train        Docker train setup
 
         │── requirements.txt        Dependencies
 

@@ -7,31 +7,16 @@ def load_config(config_file: str ="config.yml"):
         config = yaml.safe_load(f)
     return config
 
-import yaml
-
-def flatten_dict(d, parent_key='', sep='.'):
+def flatten_numeric_values(d, parent_key='', sep='.'):
     """Flatten nested dictionaries using dot notation."""
-    items = []
+    items = {}
     for k, v in d.items():
         new_key = f"{parent_key}{sep}{k}" if parent_key else k
         if isinstance(v, dict):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
-
-def yield_yaml_params_to_mlflow(yaml_path):
-    """Load YAML, flatten it, and log string params to MLflow."""
-    config = load_config(config_file=yaml_path)
-    flat_config = flatten_dict(config)
-
-    for key, value in flat_config.items():
-        if isinstance(value, np.number):
-            yield (key, value)
-            print(f"Logged: {key} = {value}")
-        else:
-            print(f"Skipped: {key} (non-string type: {type(value)})")
-
+            items.update(flatten_numeric_values(v, new_key, sep=sep))
+        elif isinstance(v, (int, float)):
+            items[new_key] = v
+    return items
 
 # set for global use
 CONFIG = load_config()

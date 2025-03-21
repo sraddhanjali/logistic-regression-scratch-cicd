@@ -2,6 +2,23 @@ import os
 import glob
 import subprocess
 from functools import wraps
+import logging
+import sys
+sys.path.append(".")
+from utils.mlflow_manager import MLflowManager
+
+LOG_FILE = "dvc_manager.log"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s — %(levelname)s — %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(LOG_FILE, mode='w')
+    ]
+)
+
+logger = logging.getLogger("dvc-manager")
 
 def ensure_dvc_initialized(func):
     """Decorator to initialize DVC repo if not already."""
@@ -18,11 +35,11 @@ def ensure_dvc_initialized(func):
 def skip_if_tracked(func):
     """Skip DVC add if file is already tracked."""
     @wraps(func)
-    def wrapper(filepath, *args, **kwargs):
-        if os.path.exists(filepath + ".dvc"):
-            print(f"✅ File '{filepath}' already tracked by DVC. Skipping.")
+    def wrapper(d, *args, **kwargs):
+        if os.path.exists(d + ".dvc"):
+            print(f"✅ File '{d}' already tracked by DVC. Skipping.")
             return
-        return func(filepath, *args, **kwargs)
+        return func(d, *args, **kwargs)
     return wrapper
 
 def ensure_remote_not_exists(func):
@@ -39,29 +56,28 @@ def ensure_remote_not_exists(func):
 
 
 def get_all_nested_files(func):
-    """Decorator to yield files if dir is provided and not being tracked."""
+    """Decorator to apply `func` to each .csv file in directory, or just once if single file."""
     @wraps(func)
-    def wrapper(_path, *args, **kwargs):
-        if os.path.isdir(_path):
-            files = glob.glob(f"{_path}/*.csv", recursive=True)
+    def wrapper(d, *args, **kwargs):
+        if os.path.isdir(d):
+            files = glob.glob(os.path.join(d, "**/*.csv"), recursive=True)
             for f in files:
-                yield f
-            yield func(f, *args, **kwargs)
-        if os.path.isfile(_path):
-            return func(_path, *args, **kwargs)
+                func(f, *args, **kwargs)
+        elif os.path.isfile(d):
+            func(d, *args, **kwargs)
     return wrapper
 
 class DVCManager:
-    def __init__(self, dvc_config=None):
-        self.dvc_config = dvc_config
 
-    @staticmethod
-    @skip_if_tracked
-    def version_data(f_path):
-        subprocess.run(["dvc", "add", f_path], check=True)
-        subprocess.run(["git", "add", f"{f_path}.dvc", ".gitignore"])
-        os.system("git commit -m 'Version dataset'")
-        os.system("dvc push")
+    dvc_config = None
+
+    def run_command(cmd):
+        logger.info(f"💻 Running command: {' '.join(cmd)}")
+        try:
+            subprocess.run(cmd, check=True)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ Command failed: {' '.join(cmd)}")
+            pass
 
     @staticmethod
     @ensure_dvc_initialized
@@ -69,23 +85,37 @@ class DVCManager:
     def add_remote(storage, name):
         name = name
         url = storage
-        subprocess.run(["dvc", "remote", "add", "-d", name, url], check=True)
+        cmd = ["dvc", "remote", "add", "-d", name, url]
+        DVCManager.run_command(cmd)
         print(f"🚀 DVC remote '{name}' added.")
     
-    def setup_remote(self):
-        if f"{self.dvc_config['remote']}":
-            DVCManager.add_remote(self.dvc_config["remote_storage"], "myremote")
+    @staticmethod
+    def setup_remote(dvc_config=None): 
+        dvc_config=dvc_config
+        if f"{dvc_config['remote']}":
+            DVCManager.add_remote(dvc_config["remote_storage"], "myremote")
             print(f"🚀 myremote DVC remote added.")
         else:
-            DVCManager.add_remote(self.dvc_config["local_storage"], "localremote")
+            DVCManager.add_remote(dvc_config["local_storage"], "localremote")
             print(f"🚀 local_remote DVC remote added.")
-
     
+    @staticmethod
     @get_all_nested_files
     @skip_if_tracked
-    def version(self, d):
-        subprocess.run(["dvc", "add", f"{d}"])
-        subprocess.run(["git", "add", f"{d}"])
-    
-    def push_all(self):
-        subprocess.run(["dvc", "push"])
+    def version(d):
+        dvc_add = ["dvc", "add", f"{d}"]
+        git_add = ["git", "add", f"{d}.dvc"]
+        DVCManager.run_command(dvc_add)
+        DVCManager.run_command(git_add)
+       
+    @staticmethod
+    def commit_and_push():
+        git_commit = ["git", "commit", "-m", "'Version dataset'"]
+        dvc_push = ["dvc", "push"]
+        DVCManager.run_command(git_commit)
+        DVCManager.run_command(dvc_push)
+
+    @staticmethod
+    def log_to_mlflow(mlflow_obj: MLflowManager):
+        if os.path.exists(LOG_FILE):
+            mlflow_obj.log({"artifacts": LOG_FILE})

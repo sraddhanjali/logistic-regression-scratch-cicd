@@ -20,6 +20,11 @@ model:
   
 data_pipelines:
   requested_dataset: "iris"
+  batch:
+     source: "synthetic" # use some source csv if  needed inside data folder
+     target_column: "label"
+     output_path: *data_dir
+     drift_threshold: 0.05 # if KL
 
 mlflow: 
   tracking_uri: "https://localhost:54058"
