@@ -52,7 +52,6 @@ class DataPipeline:
             return load_digits(return_X_y=True)
         else:
             raise ValueError(f"Unsupported dataset: {dataset_name}")
-        return df
     
     @staticmethod
     def check_folder_files(folderpath: str, patterns: list):
@@ -112,7 +111,8 @@ class DataPipeline:
 
     def get_data(self, dataset: str='synthetic', debug: bool=False) -> list:
         self.debug = debug
-        print(f"Debug mode enabled: might lose datasets - use wisely and create backup of data before proceeding")
+        if self.debug:
+            print(f"Debug mode {self.debug}: might lose datasets - use wisely and create backup of data before proceeding")
         if self.detect_n_create_new_dataset(dataset):
             root_dir = self.config["data_pipelines"]["batch"]
             output_dir = root_dir["output_path"]

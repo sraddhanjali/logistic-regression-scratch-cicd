@@ -13,27 +13,25 @@ dataset: ["synthetic", "iris", "digits"]
 data_dir: &data_dir "data/"
 file_patterns: ["train.csv", "test.csv"]
 
+
 model:
-  training_model: &train_model "models/training_model.pkl"
-  best_model: &live_model "models/best_model.pkl"
+  model_dir: "models/"
+  training_model: &train_model "training_model.pkl"
+  best_model: &live_model "best_model.pkl"
   
 data_pipelines:
+  requested_dataset: "iris"
+
   batch:
     source: "synthetic" # use some source csv if  needed inside data folder
     target_column: "label"
     output_path: *data_dir
     drift_threshold: 0.05 # if KL divergence exceeds, retrain the model
-  
-  stream:
-    source: "real_time_topic" # kafka topic name
-    target_column: "label"
-    output_path: "stream_post_process/"
-    bootstrap_servers: "localhost:9092"
-    batch_size: 100 # no. of messages to accuulate before storing
 
 mlflow: 
   tracking_uri: "https://localhost:5000"
-  experiment_name: "logistic_regression_experiment"
+  default_port: 54058
+  experiment_name: "lr_iris_train_experiment"
 
 training:
   model_path: *train_model # reference to above model types
@@ -42,6 +40,9 @@ training:
 
 deployment:
   model_path: *live_model # reference to model that is launched
-  
-  
 
+# anchors and aliases
+dvc:
+  remote: "False"
+  remote_storage: "s3://dvc_bucket/path"
+  local_storage: "dvc_bucket/"
